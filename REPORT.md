@@ -270,3 +270,94 @@ No LMS backend errors in the last 2 minutes — the service looks clean.
 ```
 
 The agent correctly used `obs_error_tally` to check for errors, then `obs_logs_search` to inspect the log details, and provided a structured summary with specific error messages and affected operations.
+
+---
+
+## Task 4A — Multi-step investigation
+
+**Root cause:** The planted bug was in `backend/src/lms_backend/routers/items.py` — the `get_items` endpoint caught all exceptions and returned a misleading `404 Items not found` response with `logger.warning`, hiding the real database failure. The fix changed it to return `500 Internal Server Error` with the actual exception message and `logger.error`.
+
+**Diff:**
+```diff
+-        logger.warning(
+-            "items_list_failed_as_not_found",
+-            extra={"event": "items_list_failed_as_not_found"},
+-        )
+-        raise HTTPException(
+-            status_code=status.HTTP_404_NOT_FOUND,
+-            detail="Items not found",
+-        ) from exc
++        logger.error(
++            "items_list_failed",
++            extra={"event": "items_list_failed", "error": str(exc)},
++        )
++        raise HTTPException(
++            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
++            detail=f"Failed to retrieve items: {exc}",
++        ) from exc
+```
+
+**Agent response to "What went wrong?" (PostgreSQL stopped, after fix):**
+
+```
+**The Learning Management Service is down due to a database connection failure.**
+
+Here's what I found:
+
+- **7 errors** in the last 10 minutes, all from the **Learning Management Service**
+- **Root cause**: `socket.gaierror: [Errno -2] Name or service not known` — the service **cannot resolve the database hostname** via DNS
+- **Affected endpoints**:
+  - `GET /items/` — returning HTTP 500 (failed twice)
+  - `POST /pipeline/sync` — sync pipeline crashing when trying to load items into the database
+
+The failure chain is: FastAPI route → SQLModel query → asyncpg tries to open a TCP connection to the PostgreSQL host → DNS lookup fails → connection refused.
+
+**Likely causes:**
+1. The PostgreSQL database hostname in the connection string is incorrect or misspelled
+2. The database container/service is down or not yet started
+3. DNS resolution is broken between the LMS and database (e.g., Docker network issue, missing service discovery entry)
+
+The fix would be to check the database connection configuration and verify the database service is reachable from the LMS container.
+```
+
+After the fix, the agent now sees the real HTTP 500 error with the actual exception details instead of the misleading 404 response.
+
+---
+
+## Task 4B — Proactive health check
+
+Created a recurring health check via the built-in cron tool. While PostgreSQL was stopped, the agent proactively posted a health report into the same Flutter chat identifying the database connection failure with specific error counts and affected endpoints.
+
+---
+
+## Task 4C — Bug fix and recovery
+
+**1. Root cause:** The `get_items` handler in `backend/src/lms_backend/routers/items.py` caught all exceptions and returned `404 Items not found` instead of surfacing the real `500 Internal Server Error` with the actual database failure details.
+
+**2. Fix:** Changed the exception handler to:
+- Return `HTTP_500_INTERNAL_SERVER_ERROR` instead of `HTTP_404_NOT_FOUND`
+- Include the actual exception message in the response detail
+- Log at `error` level instead of `warning`
+- Include the error string in the log extra field
+
+**3. Post-fix failure check** (PostgreSQL stopped, after redeploy):
+
+```
+**The Learning Management Service is down due to a database connection failure.**
+
+Here's what I found:
+
+- **7 errors** in the last 10 minutes, all from the **Learning Management Service**
+- **Root cause**: `socket.gaierror: [Errno -2] Name or service not known` — the service cannot resolve the database hostname via DNS
+- **Affected endpoints**:
+  - `GET /items/` — returning HTTP 500 (failed twice)
+  - `POST /pipeline/sync` — sync pipeline crashing when trying to load items into the database
+
+The failure chain is: FastAPI route → SQLModel query → asyncpg tries to open a TCP connection to the PostgreSQL host → DNS lookup fails → connection refused.
+```
+
+**4. Healthy follow-up** (PostgreSQL restarted, 2-minute window):
+
+```
+No LMS backend errors in the last 2 minutes — the service looks clean.
+```
