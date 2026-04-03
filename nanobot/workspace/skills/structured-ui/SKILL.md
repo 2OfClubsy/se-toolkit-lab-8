@@ -1,32 +1,27 @@
 ---
 name: structured-ui
-description: Use interactive UI messages on supported chat channels when the user needs to choose
+description: Deliver interactive choice/confirm messages on compatible channels
 always: true
 ---
 
-# Structured UI Skill
+# Interactive UI Skill
 
-Use interactive UI messages on supported chat channels when the next useful
-step is a real user choice between multiple valid options.
+Send interactive messages when the user faces a real decision between valid options.
 
-## Strategy
+## When to use
 
-- Prefer `mcp_webchat_ui_message` over a plain text list or follow-up question
-  when the user needs to choose among multiple concrete options.
-- Use interactive choices for selection tasks such as picking a lab, choosing
-  from search results, selecting an action, or narrowing an ambiguous request.
-- If there is only one sensible next option, respond normally instead of
-  forcing a choice UI.
-- If the interactive tool is unavailable on the current channel, fall back to a
-  concise plain text question or list.
+- Reach for `mcp_webchat_ui_message` instead of plain text lists when presenting multiple concrete options.
+- Apply to selection scenarios: picking a lab, filtering results, choosing an action, or clarifying vague requests.
+- If only one reasonable next step exists, reply normally — don't force an interactive prompt.
+- Fall back to a short text question if the current channel doesn't support interactive widgets.
 
-## Response style
+## Message types
 
-- Do not send a separate plain text preamble such as "I'll check" before the
-  interactive choice. Send the choice UI directly, or use one brief
-  `composite` payload if short explanatory text is genuinely helpful.
-- Use `type: "choice"` to present multiple options.
-- Use `type: "confirm"` for a confirmation prompt.
-- Use `type: "composite"` to combine explanatory text with an interactive part.
-- Read the current chat ID from the runtime context and pass it as the
-  `chat_id` argument so the payload is routed to the active WebSocket client.
+- `choice` — present multiple options
+- `confirm` — yes/no confirmation
+- `composite` — combine brief explanation with an interactive component
+
+## Guidelines
+
+- Skip preamble text like "Let me check" before the interactive element. Send the choice directly, or wrap context + choice in a single `composite` payload.
+- Pull the active `chat_id` from session runtime context and include it so the message routes to the correct WebSocket client.
