@@ -12,7 +12,8 @@ from pydantic_settings import BaseSettings
 
 APP_DIR = Path(__file__).resolve().parent
 CONFIG_PATH = APP_DIR / "config.json"
-RESOLVED_CONFIG_PATH = APP_DIR / "config.resolved.json"
+RESOLVED_CONFIG_PATH = Path("/tmp/nanobot/config.resolved.json")
+RESOLVED_CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 
 class Settings(BaseSettings):

@@ -11,6 +11,7 @@ WORKDIR /app
 COPY --from=workspace pyproject.toml uv.lock /app/
 COPY pyproject.toml README.md /app/nanobot/
 COPY --from=workspace mcp /app/mcp
+COPY --from=workspace mcp/mcp-obs /app/mcp/mcp-obs
 COPY --from=workspace nanobot-websocket-channel /app/nanobot-websocket-channel
 
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -36,6 +37,10 @@ RUN groupadd --gid "${APP_GID}" nonroot \
 
 COPY --from=builder --chown=${APP_UID}:${APP_GID} /opt/nanobot-venv /opt/nanobot-venv
 COPY --from=builder --chown=${APP_UID}:${APP_GID} /app /app
+
+# Create workspace directory structure with correct ownership for named volume
+RUN mkdir -p /app/nanobot/workspace/{cron,memory,sessions,skills} \
+    && chown -R ${APP_UID}:${APP_GID} /app/nanobot/workspace
 
 ENV PATH="/opt/nanobot-venv/bin:$PATH"
 
