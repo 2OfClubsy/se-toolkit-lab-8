@@ -7,9 +7,7 @@ members = [
   "nanobot-websocket-channel/nanobot-channel-protocol",
   "nanobot-websocket-channel/mcp-webchat",
   "nanobot-websocket-channel/nanobot-webchat",
-
-  # Task 3 — uncomment after you add mcp-obs.
-  # "mcp/mcp-obs",
+  "mcp/mcp-obs",
 ]
 
 [tool.uv.sources]
@@ -18,9 +16,7 @@ nanobot = { workspace = true, editable = true }
 mcp-webchat = { workspace = true, editable = true }
 nanobot-channel-protocol = { workspace = true, editable = true }
 nanobot-webchat = { workspace = true, editable = true }
-
-# Task 3 — uncomment after you add mcp-obs.
-# mcp-obs = { workspace = true, editable = true }
+mcp-obs = { workspace = true, editable = true }
 
 [dependency-groups]
 dev = [

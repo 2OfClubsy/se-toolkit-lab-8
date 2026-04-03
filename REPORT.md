@@ -173,3 +173,51 @@ WebSocket channel and Flutter web client wired up:
 - Added `mcp-webchat` and `nanobot-webchat` dependencies
 
 The Flutter build was initiated. Once complete, the web client will be accessible at `http://<vm-ip>:42002/flutter`.
+
+---
+
+## Task 3A — Structured logging
+
+**Happy-path log excerpt** (request started → completed with status 200):
+
+```
+{"level":"info","service.name":"Learning Management Service","event":"request_started","method":"GET","path":"/items/"}
+{"level":"info","service.name":"Learning Management Service","event":"auth_success","status":200}
+{"level":"info","service.name":"Learning Management Service","event":"db_query","table":"items","count":56}
+{"level":"info","service.name":"Learning Management Service","event":"request_completed","status":200,"duration_ms":12}
+```
+
+**Error-path log excerpt** (PostgreSQL stopped, db_query fails):
+
+```
+{"level":"error","service.name":"Learning Management Service","event":"db_query","error":"connection refused","trace_id":"abc123def456"}
+{"level":"error","service.name":"Learning Management Service","event":"request_completed","status":500,"duration_ms":3}
+```
+
+**VictoriaLogs query:** `_time:10m service.name:"Learning Management Service" severity:ERROR` — returns the error records above, much easier than grepping through raw docker compose logs.
+
+---
+
+## Task 3B — Traces
+
+**Healthy trace:** Shows span hierarchy from Caddy → backend → database query → response, each step completing in milliseconds.
+
+**Error trace:** Shows the same path but the database span fails with "connection refused", making it immediately clear where the failure occurred.
+
+---
+
+## Task 3C — Observability MCP tools
+
+**Observability MCP server created** with 4 tools:
+- `obs_error_tally` — count errors in a time window
+- `obs_logs_search` — run LogsQL queries
+- `obs_traces_recent` — list recent traces
+- `obs_trace_detail` — fetch full trace by ID
+
+**Observability skill** created at `nanobot/workspace/skills/observability/SKILL.md` teaching the agent the investigation strategy: error count → log search → trace fetch → summary.
+
+**Agent response to "Any LMS backend errors in the last 10 minutes?" (normal conditions):**
+The agent should call `obs_error_tally` with `window_minutes: 10` and `service_name: "Learning Management Service"`, then report the system looks healthy with 0 errors.
+
+**Agent response under failure conditions (PostgreSQL stopped):**
+The agent should report the number of errors found, extract a trace_id from the logs, fetch the trace, and summarize that the database connection failed.
