@@ -3,10 +3,8 @@ members = [
   "backend",
   "qwen-code-api",
   "mcp/mcp-lms",
+  "nanobot",
 
-  # Task 1 — uncomment after you create the nanobot/ project.
-  # "nanobot",
-  
   # Task 2B — uncomment after you add the webchat channel.
   # "nanobot-websocket-channel/nanobot-channel-protocol",
   # "nanobot-websocket-channel/mcp-webchat",
@@ -19,9 +17,7 @@ members = [
 
 [tool.uv.sources]
 mcp-lms = { workspace = true, editable = true }
-
-# Task 1 — uncomment after you create the nanobot/ project.
-# nanobot = { workspace = true, editable = true }
+nanobot = { workspace = true, editable = true }
 
 # Task 2B — uncomment after you add the webchat channel.
 # mcp-webchat = { workspace = true, editable = true }
@@ -138,10 +134,8 @@ include = [
   "scripts",
   "mcp",
   "qwen-code-api",
-  
-  # Task 1 — uncomment after you create the nanobot/ project.
-  # "nanobot",
-  
+  "nanobot",
+
   # Task 2B — uncomment after you add the webchat channel.
   # "nanobot-websocket-channel",
 ]
@@ -174,10 +168,8 @@ include = [
   "backend",
   "mcp",
   "qwen-code-api",
-  
-  # Task 1 — uncomment after you create the nanobot/ project.
-  # "nanobot",
-  
+  "nanobot",
+
   # Task 2B — uncomment after you add the webchat channel.
   # "nanobot-websocket-channel",
 ]
