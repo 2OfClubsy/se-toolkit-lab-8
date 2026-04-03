@@ -132,47 +132,68 @@ The agent correctly identified that no specific lab was named and asked me to ch
 
 ## Task 2A — Deployed agent
 
-Nanobot Docker image built successfully. Startup log excerpt:
+Nanobot gateway startup log excerpt:
 
 ```
-$ docker compose --env-file .env.docker.secret build nanobot
-[+] Building 104.6s (26/26) FINISHED
- => [builder 7/9] RUN uv sync --frozen --no-install-workspace --package nanobot  52.6s
- => [builder 9/9] RUN uv sync --frozen --package nanobot                         11.1s
- => exporting to image                                                           25.9s
- => => naming to docker.io/library/se-toolkit-lab-8-nanobot:latest
+Using config: /tmp/nanobot/config.resolved.json
+🐈 Starting nanobot gateway version 0.1.4.post5 on port 18790...
+WebChat channel enabled
+✓ Channels enabled: webchat
+✓ Heartbeat: every 1800s
+Cron service started with 0 jobs
+Heartbeat started (every 1800s)
+Starting webchat channel...
+WebChat relay listening on 127.0.0.1:8766
+WebChat starting on 0.0.0.0:8765
+server listening on 0.0.0.0:8765
+MCP server 'lms': connected, 9 tools registered
+MCP server 'obs': connected, 4 tools registered
+MCP server 'webchat': connected, 1 tools registered
+Agent loop started
 ```
 
-The nanobot service is configured in docker-compose.yml with:
-- Build context at `./nanobot` with workspace additional context
-- Host UID/GID mapping for file ownership consistency
-- Volumes mounted for live editing: `./nanobot`, `./mcp`, `./nanobot-websocket-channel`
-- Environment variables for LLM provider, LMS backend, webchat channel, and OpenTelemetry
-- Dependencies on `backend`, `qwen-code-api`, and `otel-collector`
+All three MCP servers connected successfully:
+- **lms**: 9 tools (health, labs, learners, pass_rates, timeline, groups, top_learners, completion_rate, sync_pipeline)
+- **obs**: 4 tools (obs_logs_search, obs_error_tally, obs_traces_recent, obs_trace_detail)
+- **webchat**: 1 tool (mcp_webchat_ui_message)
 
 ---
 
 ## Task 2B — Web client
 
-WebSocket channel and Flutter web client wired up:
+**Flutter web client at /flutter:** Serves real content — main.dart.js is present and loads correctly.
 
-**Caddyfile routes added:**
-- `/ws/chat` → reverse proxy to nanobot webchat port
-- `/flutter*` → file server for Flutter build output
+**WebSocket test — direct query through Caddy:**
 
-**docker-compose.yml changes:**
-- `nanobot` service with webchat env vars (`NANOBOT_WEBCHAT_CONTAINER_ADDRESS`, `NANOBOT_WEBCHAT_CONTAINER_PORT`, `NANOBOT_ACCESS_KEY`)
-- `client-web-flutter` build service writing to named volume
-- `caddy` service depends on `nanobot` and `client-web-flutter`, mounts Flutter volume
+```
+$ uv run python -c "
+  uri = 'ws://localhost:42002/ws/chat?access_key=nanobot-private-password'
+  send: {'content': 'What labs are available?'}
+"
+```
 
-**entrypoint.py changes:**
-- Webchat channel config injected from env vars
-- `mcp_webchat` MCP server registered for structured UI messages
+Agent response:
 
-**nanobot/pyproject.toml:**
-- Added `mcp-webchat` and `nanobot-webchat` dependencies
+```
+Here are the available labs:
 
-The Flutter build was initiated. Once complete, the web client will be accessible at `http://<vm-ip>:42002/flutter`.
+1. Lab 01 – Products, Architecture & Roles
+2. Lab 02 – Run, Fix, and Deploy a Backend Service
+3. Lab 03 – Backend API: Explore, Debug, Implement, Deploy
+4. Lab 04 – Testing, Front-end, and AI Agents
+5. Lab 05 – Data Pipeline and Analytics Dashboard
+6. Lab 06 – Build Your Own Agent
+7. Lab 07 – Build a Client with an AI Coding Agent
+8. Lab 08 – lab-08
+
+Let me know if you'd like details on any specific lab.
+```
+
+**End-to-end chain verified:**
+1. Flutter serves compiled app at `http://localhost:42002/flutter` ✅
+2. WebSocket at `/ws/chat` accepts connections with `access_key=nanobot-private-password` ✅
+3. Agent responds with real LMS backend data (8 labs) ✅
+4. WebChat channel processes messages and routes responses back through WebSocket ✅
 
 ---
 
