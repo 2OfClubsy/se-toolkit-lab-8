@@ -229,16 +229,44 @@ Let me know if you'd like details on any specific lab.
 
 ## Task 3C — Observability MCP tools
 
-**Observability MCP server created** with 4 tools:
+**Observability MCP server** created with 4 tools:
 - `obs_error_tally` — count errors in a time window
 - `obs_logs_search` — run LogsQL queries
 - `obs_traces_recent` — list recent traces
 - `obs_trace_detail` — fetch full trace by ID
 
-**Observability skill** created at `nanobot/workspace/skills/observability/SKILL.md` teaching the agent the investigation strategy: error count → log search → trace fetch → summary.
+**Observability skill** created at `nanobot/workspace/skills/observability/SKILL.md`.
 
-**Agent response to "Any LMS backend errors in the last 10 minutes?" (normal conditions):**
-The agent should call `obs_error_tally` with `window_minutes: 10` and `service_name: "Learning Management Service"`, then report the system looks healthy with 0 errors.
+**Agent response under normal conditions — "Any LMS backend errors in the last 10 minutes?":**
 
-**Agent response under failure conditions (PostgreSQL stopped):**
-The agent should report the number of errors found, extract a trace_id from the logs, fetch the trace, and summarize that the database connection failed.
+```
+No LMS backend errors in the last 10 minutes — the service looks clean. ✅
+```
+
+**Agent response under failure conditions (PostgreSQL stopped, then triggered a request):**
+
+```
+**Degraded** — 1 error record in the last 10 minutes for the Learning Management Service.
+
+The logs show **database connectivity issues**:
+
+| Time | Error | Operation |
+|------|-------|-----------|
+| 18:12:57 | `[Errno -2] Name or service not known` | SELECT on `item` table |
+| 18:12:45 | `connection is closed` (asyncpg/SQLAlchemy) | SELECT on `item` table |
+
+The most recent error is a **DNS resolution failure** — the LMS backend can't resolve the
+database hostname. The earlier error shows a closed DB connection, which may be a related
+symptom (e.g., the connection pool lost its target).
+
+**Likely cause:** The database host is unreachable or its DNS entry has changed. Worth
+checking the DB service status and the LMS database connection string.
+```
+
+**Agent response after PostgreSQL recovery — "Any LMS backend errors in the last 2 minutes?":**
+
+```
+No LMS backend errors in the last 2 minutes — the service looks clean.
+```
+
+The agent correctly used `obs_error_tally` to check for errors, then `obs_logs_search` to inspect the log details, and provided a structured summary with specific error messages and affected operations.
