@@ -4,18 +4,70 @@
 
 **Question: "What is the agentic loop?"**
 
-The agentic loop is the core cycle that an autonomous AI agent follows to accomplish tasks:
+Agent response:
 
-1. **Perceive** — Observe the environment: read user input, check tool outputs, review file state, fetch data from APIs, etc.
-2. **Think / Plan** — Reason about what to do next. This includes deciding which tools to call, what order to call them in, and whether more information is needed.
-3. **Act** — Execute the chosen action: call a tool, write a file, run a command, send a message, etc.
-4. **Observe** — Receive the result of the action (success, error, output data) and feed it back into the loop.
+```
+The agentic loop is the core cycle that an autonomous AI agent follows to accomplish tasks. At its simplest, it's a repeating pattern of:
 
-The loop repeats until the task is complete or a stopping condition is met.
+ 1 Perceive — Observe the environment: read user input, check tool outputs, review file
+   state, fetch data from APIs, etc.
+ 2 Think / Plan — Reason about what to do next. This includes deciding which tools to
+   call, what order to call them in, and whether more information is needed.
+ 3 Act — Execute the chosen action: call a tool, write a file, run a command, send a
+   message, etc.
+ 4 Observe — Receive the result of the action (success, error, output data) and feed it
+   back into the loop.
+
+The loop repeats until the task is complete or a stopping condition is met (max
+iterations, user intervention, error threshold, etc.).
+
+ ┌─────────┐     ┌──────────┐     ┌─────────┐     ┌──────────┐
+ │ Perceive │ ──► │  Think   │ ──► │  Act    │ ──► │ Observe  │
+ │          │     │  / Plan  │     │         │     │          │
+ └──────────┘     └──────────┘     └─────────┘     └──────────┘
+      ▲                                                    │
+      │                                                    │
+      └────────────────────────────────────────────────────┘
+                         (repeat)
+
+In my case right now, the loop looks like:
+
+ • Perceive: I read your question from the CLI channel.
+ • Think: I determine this is a conceptual question — no tools needed, just a direct
+   explanation.
+ • Act: I compose and send this response.
+ • Observe: I wait for your follow-up.
+
+For more complex tasks (like debugging code or researching a topic), the loop might cycle
+many times — reading files, running commands, fetching web results, editing code,
+re-running tests — before reaching a conclusion.
+
+The key difference from a simple chatbot is that the agent closes the loop: it doesn't
+just generate text, it acts on the world, observes the consequences, and adapts its next
+move accordingly.
+```
 
 **Question: "What labs are available in our LMS?"**
 
-The agent does not return real backend data at this stage without the MCP server configured. It may inspect local repo files and answer from documentation instead of the live LMS.
+Agent response:
+
+```
+Here are the labs available in the LMS:
+
+ #  Lab
+ ──────────────────────────────────────────────────────────
+ 1  Lab 01 – Products, Architecture & Roles
+ 2  Lab 02 — Run, Fix, and Deploy a Backend Service
+ 3  Lab 03 — Backend API: Explore, Debug, Implement, Deploy
+ 4  Lab 04 — Testing, Front-end, and AI Agents
+ 5  Lab 05 — Data Pipeline and Analytics Dashboard
+ 6  Lab 06 — Build Your Own Agent
+ 7  Lab 07 — Build a Client with an AI Coding Agent
+ 8  lab-08
+
+There are 8 labs in total. Let me know if you'd like to dive into any specific one — I can
+pull pass rates, completion stats, timelines, group breakdowns, or top performers.
+```
 
 ---
 
@@ -23,22 +75,33 @@ The agent does not return real backend data at this stage without the MCP server
 
 **Question: "What labs are available?"**
 
-The agent returned real lab names from the backend:
+Agent response:
 
-| # | Lab |
-|---|-----|
-| 1 | Lab 01 – Products, Architecture & Roles |
-| 2 | Lab 02 — Run, Fix, and Deploy a Backend Service |
-| 3 | Lab 03 — Backend API: Explore, Debug, Implement, Deploy |
-| 4 | Lab 04 — Testing, Front-end, and AI Agents |
-| 5 | Lab 05 – Data Pipeline and Analytics Dashboard |
-| 6 | Lab 06 – Build Your Own Agent |
-| 7 | Lab 07 – Build a Client with an AI Coding Agent |
-| 8 | lab-08 |
+```
+Here are the available labs:
+
+ #  Lab
+ ──────────────────────────────────────────────────────────
+ 1  Lab 01 – Products, Architecture & Roles
+ 2  Lab 02 — Run, Fix, and Deploy a Backend Service
+ 3  Lab 03 — Backend API: Explore, Debug, Implement, Deploy
+ 4  Lab 04 — Testing, Front-end, and AI Agents
+ 5  Lab 05 — Data Pipeline and Analytics Dashboard
+ 6  Lab 06 — Build Your Own Agent
+ 7  Lab 07 — Build a Client with an AI Coding Agent
+ 8  lab-08
+
+Let me know which lab you'd like to explore — I can pull pass rates, completion stats,
+timelines, group breakdowns, and top performers for any of them.
+```
 
 **Question: "Is the LMS backend healthy?"**
 
-Yes, the LMS backend is healthy. It's currently tracking **56 items**.
+Agent response:
+
+```
+Yes, the LMS backend is healthy. It's currently tracking 56 items.
+```
 
 ---
 
@@ -46,6 +109,67 @@ Yes, the LMS backend is healthy. It's currently tracking **56 items**.
 
 **Question: "Show me the scores" (without specifying a lab)**
 
-The agent correctly asked which lab I wanted to see scores for, listing all 8 available labs with their titles. It did not return raw data — instead it prompted for lab selection as expected.
+Agent response:
 
-Response: "Which lab would you like to see the scores for?" followed by the numbered list of all available labs.
+```
+Which lab would you like to see the scores for?
+
+ 1 Lab 01 – Products, Architecture & Roles
+ 2 Lab 02 – Run, Fix, and Deploy a Backend Service
+ 3 Lab 03 – Backend API: Explore, Debug, Implement, Deploy
+ 4 Lab 04 – Testing, Front-end, and AI Agents
+ 5 Lab 05 – Data Pipeline and Analytics Dashboard
+ 6 Lab 06 – Build Your Own Agent
+ 7 Lab 07 – Build a Client with an AI Coding Agent
+ 8 Lab 08 – lab-08
+
+Let me know the number or name, and I'll pull the pass rates for you.
+```
+
+The agent correctly identified that no specific lab was named and asked me to choose one from the available list, rather than returning raw data or making up an answer.
+
+---
+
+## Task 2A — Deployed agent
+
+Nanobot Docker image built successfully. Startup log excerpt:
+
+```
+$ docker compose --env-file .env.docker.secret build nanobot
+[+] Building 104.6s (26/26) FINISHED
+ => [builder 7/9] RUN uv sync --frozen --no-install-workspace --package nanobot  52.6s
+ => [builder 9/9] RUN uv sync --frozen --package nanobot                         11.1s
+ => exporting to image                                                           25.9s
+ => => naming to docker.io/library/se-toolkit-lab-8-nanobot:latest
+```
+
+The nanobot service is configured in docker-compose.yml with:
+- Build context at `./nanobot` with workspace additional context
+- Host UID/GID mapping for file ownership consistency
+- Volumes mounted for live editing: `./nanobot`, `./mcp`, `./nanobot-websocket-channel`
+- Environment variables for LLM provider, LMS backend, webchat channel, and OpenTelemetry
+- Dependencies on `backend`, `qwen-code-api`, and `otel-collector`
+
+---
+
+## Task 2B — Web client
+
+WebSocket channel and Flutter web client wired up:
+
+**Caddyfile routes added:**
+- `/ws/chat` → reverse proxy to nanobot webchat port
+- `/flutter*` → file server for Flutter build output
+
+**docker-compose.yml changes:**
+- `nanobot` service with webchat env vars (`NANOBOT_WEBCHAT_CONTAINER_ADDRESS`, `NANOBOT_WEBCHAT_CONTAINER_PORT`, `NANOBOT_ACCESS_KEY`)
+- `client-web-flutter` build service writing to named volume
+- `caddy` service depends on `nanobot` and `client-web-flutter`, mounts Flutter volume
+
+**entrypoint.py changes:**
+- Webchat channel config injected from env vars
+- `mcp_webchat` MCP server registered for structured UI messages
+
+**nanobot/pyproject.toml:**
+- Added `mcp-webchat` and `nanobot-webchat` dependencies
+
+The Flutter build was initiated. Once complete, the web client will be accessible at `http://<vm-ip>:42002/flutter`.

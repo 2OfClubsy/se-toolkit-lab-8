@@ -4,13 +4,10 @@ members = [
   "qwen-code-api",
   "mcp/mcp-lms",
   "nanobot",
+  "nanobot-websocket-channel/nanobot-channel-protocol",
+  "nanobot-websocket-channel/mcp-webchat",
+  "nanobot-websocket-channel/nanobot-webchat",
 
-  # Task 2B — uncomment after you add the webchat channel.
-  # "nanobot-websocket-channel/nanobot-channel-protocol",
-  # "nanobot-websocket-channel/mcp-webchat",
-  # "nanobot-websocket-channel/nanobot-webchat",
-  # "nanobot-websocket-channel/client-telegram-bot",
-  
   # Task 3 — uncomment after you add mcp-obs.
   # "mcp/mcp-obs",
 ]
@@ -18,12 +15,9 @@ members = [
 [tool.uv.sources]
 mcp-lms = { workspace = true, editable = true }
 nanobot = { workspace = true, editable = true }
-
-# Task 2B — uncomment after you add the webchat channel.
-# mcp-webchat = { workspace = true, editable = true }
-# nanobot-channel-protocol = { workspace = true, editable = true }
-# nanobot-webchat = { workspace = true, editable = true }
-# client-telegram-bot = { workspace = true, editable = true }
+mcp-webchat = { workspace = true, editable = true }
+nanobot-channel-protocol = { workspace = true, editable = true }
+nanobot-webchat = { workspace = true, editable = true }
 
 # Task 3 — uncomment after you add mcp-obs.
 # mcp-obs = { workspace = true, editable = true }
@@ -135,21 +129,16 @@ include = [
   "mcp",
   "qwen-code-api",
   "nanobot",
-
-  # Task 2B — uncomment after you add the webchat channel.
-  # "nanobot-websocket-channel",
+  "nanobot-websocket-channel",
 ]
 extraPaths = [
   "backend/src",
   "mcp/mcp-lms/src",
   "mcp/mcp-obs/src",
   "qwen-code-api/src",
-  
-  # Task 2B — uncomment after you add the webchat channel.
-  # "nanobot-websocket-channel/mcp-webchat/src",
-  # "nanobot-websocket-channel/nanobot-channel-protocol/src",
-  # "nanobot-websocket-channel/client-telegram-bot/src",
-  # "nanobot-websocket-channel/nanobot-webchat/src",
+  "nanobot-websocket-channel/mcp-webchat/src",
+  "nanobot-websocket-channel/nanobot-channel-protocol/src",
+  "nanobot-websocket-channel/nanobot-webchat/src",
 ]
 exclude = ["**/__pycache__", "**/node_modules", "**/.*", ".venv", ".direnv"]
 typeCheckingMode = "strict"
@@ -169,9 +158,7 @@ include = [
   "mcp",
   "qwen-code-api",
   "nanobot",
-
-  # Task 2B — uncomment after you add the webchat channel.
-  # "nanobot-websocket-channel",
+  "nanobot-websocket-channel",
 ]
 
 [tool.ty.rules]
